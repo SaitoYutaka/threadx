@@ -8,7 +8,7 @@
             "name": "microbit debug",
             "type": "cppdbg",
             "request":"launch",
-            "program": "${workspaceFolder}/ports/cortex_m0/microbit/example_build/sample_threadx.out",
+            "program": "${workspaceFolder}/build-microbit/example_build/main.out",
             
             "args": [],
             "stopAtEntry": false,
