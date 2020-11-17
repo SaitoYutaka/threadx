@@ -1,0 +1,3 @@
+[submodule "build-microbit/nrfx"]
+	path = build-microbit/nrfx
+	url = https://github.com/SaitoYutaka/nrfx.git
