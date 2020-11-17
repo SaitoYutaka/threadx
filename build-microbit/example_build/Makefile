@@ -234,6 +234,6 @@ tx.a : $(OBJS)
 clean:
 	rm -f *.hex
 	rm -f *.o
-	rm -f *.elf
+	rm -f *.out
 	rm tx.a
 
