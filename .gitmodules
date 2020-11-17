@@ -1,3 +1,6 @@
 [submodule "build-microbit/nrfx"]
 	path = build-microbit/nrfx
 	url = https://github.com/SaitoYutaka/nrfx.git
+[submodule "build-microbit/CMSIS_5"]
+	path = build-microbit/CMSIS_5
+	url = https://github.com/SaitoYutaka/CMSIS_5.git
