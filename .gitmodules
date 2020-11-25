@@ -4,3 +4,6 @@
 [submodule "build-microbit/CMSIS_5"]
 	path = build-microbit/CMSIS_5
 	url = https://github.com/SaitoYutaka/CMSIS_5.git
+[submodule "build-microbit/libaeabi-cortexm0"]
+	path = build-microbit/libaeabi-cortexm0
+	url = https://github.com/bobbl/libaeabi-cortexm0.git

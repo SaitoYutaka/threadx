@@ -1,12 +1,19 @@
 
 CC = arm-none-eabi-gcc
 
-CFLAGS = -mcpu=cortex-m0 -mthumb -mabi=aapcs \
+CFLAGS = -DNRF51 -mcpu=cortex-m0 -mthumb -mabi=aapcs \
 -Wall -O0 -g -mfloat-abi=soft -ffunction-sections -fdata-sections -fno-strict-aliasing -fomit-frame-pointer \
 -fno-builtin --short-enums -c
 
 INCDIR =-I../../common/inc \
--I../inc
+-I../inc \
+-I ../nrfx \
+-I ../config \
+-I ../nrfx/mdk \
+-I ../CMSIS_5/CMSIS/Core/Include \
+-I ../nrfx/drivers/include \
+-I ../nrfx/hal
+
 
 OBJS = \
 tx_thread_stack_build.o \
@@ -206,6 +213,8 @@ all : main.hex
 
 tx_vectors.o : tx_vectors.s
 	arm-none-eabi-gcc -c -g -mcpu=cortex-m0 -mthumb -o $@ -c $<
+# tx_vectors.o : ../nrfx/mdk/gcc_startup_nrf51.S
+# 	arm-none-eabi-gcc -c -g -mcpu=cortex-m0 -mthumb -o $@ -c $<
 
 cortexm0_crt0.o : cortexm0_crt0.s
 	arm-none-eabi-gcc -c -g -mcpu=cortex-m0 -mthumb -o $@ -c $<
@@ -213,11 +222,23 @@ cortexm0_crt0.o : cortexm0_crt0.s
 tx_initialize_low_level.o : tx_initialize_low_level.S
 	arm-none-eabi-gcc -c -g -mcpu=cortex-m0 -mthumb -o $@ -c $<
 
+# aeabi_memset-thumb.o : ../newlib-cygwin/newlib/libc/machine/arm/aeabi_memset-thumb.S
+# 	arm-none-eabi-gcc -c -g -mcpu=cortex-m0 -mthumb -o $@ -c $<
+
+memset.o : ../libaeabi-cortexm0/memset.S
+	arm-none-eabi-gcc -c -g -mcpu=cortex-m0 -mthumb -o $@ -c $<
+
+cm0memset.o: ../driver/cm0memset.c
+	$(CC) $(TARGET_ARCH) $(INCDIR) $(CFLAGS) -o $@ -c $<
+
+leds.o: ../driver/leds.c
+	$(CC) $(TARGET_ARCH) $(INCDIR) $(CFLAGS) -o $@ -c $<
+
 sample_threadx.o: sample_threadx.c
 	$(CC) $(TARGET_ARCH) $(INCDIR) $(CFLAGS) -o $@ -c $<
 
-main.out : tx_vectors.o cortexm0_crt0.o tx_initialize_low_level.o sample_threadx.o tx.a libgcc.a
-	arm-none-eabi-gcc -mthumb -mabi=aapcs -Wl,--gc-sections --specs=nano.specs -lc -lnosys -nostdlib -mcpu=cortex-m0 -ereset_handler -T sample_threadx.ld tx_vectors.o cortexm0_crt0.o tx_initialize_low_level.o sample_threadx.o tx.a libgcc.a -o $@
+main.out : tx_vectors.o cortexm0_crt0.o tx_initialize_low_level.o sample_threadx.o tx.a libgcc.a nrfx_rtc.o nrfx_clock.o system_nrf51.o nrfx_gpiote.o memset.o cm0memset.o leds.o
+	arm-none-eabi-gcc -mthumb -mabi=aapcs -Wl,--gc-sections --specs=nano.specs -lc -lnosys -nostdlib -mcpu=cortex-m0 -ereset_handler -T ./sample_threadx.ld tx_vectors.o cm0memset.o memset.o nrfx_gpiote.o leds.o nrfx_rtc.o nrfx_clock.o system_nrf51.o cortexm0_crt0.o tx_initialize_low_level.o sample_threadx.o tx.a libgcc.a -o $@
 
 main.hex : main.out
 	arm-none-eabi-objcopy $< $@ -O ihex
@@ -230,6 +251,19 @@ tx.a : $(OBJS)
 
 %.o:../../common/src/%.c
 	$(CC) $(TARGET_ARCH) $(INCDIR) $(CFLAGS) -o $@ -c $<
+
+nrfx_rtc.o : ../nrfx/drivers/src/nrfx_rtc.c
+	$(CC) $(TARGET_ARCH) $(INCDIR) $(CFLAGS) -o $@ -c $<
+
+nrfx_clock.o : ../nrfx/drivers/src/nrfx_clock.c
+	$(CC) $(TARGET_ARCH) $(INCDIR) $(CFLAGS) -o $@ -c $<
+
+nrfx_gpiote.o : ../nrfx/drivers/src/nrfx_gpiote.c
+	$(CC) $(TARGET_ARCH) $(INCDIR) $(CFLAGS) -o $@ -c $<
+
+system_nrf51.o : ../nrfx/mdk/system_nrf51.c
+	$(CC) $(TARGET_ARCH) $(INCDIR) $(CFLAGS) -o $@ -c $<
+
 
 clean:
 	rm -f *.hex
